@@ -232,12 +232,24 @@ int real_main(int argc, char* argv[]) {
 #endif
     }
     TestEnv args(tests, stat, sf);
-    Status st = RunTests(args, p_models, concurrent_session_runs, static_cast<size_t>(repeat_count), GetDefaultThreadPool(Env::Default()));
+
+#ifdef _WIN32
+    onnxruntime::TaskThreadPool* pool = new onnxruntime::TaskThreadPool(GetNumCpuCores());
+
+    Status st = RunTests(args, p_models, concurrent_session_runs, static_cast<size_t>(repeat_count), pool);
     if (!st.IsOK()) {
       fprintf(stderr, "%s\n", st.ErrorMessage().c_str());
       return -1;
     }
 
+    delete pool;
+#else
+    Status st = RunTests(args, p_models, concurrent_session_runs, static_cast<size_t>(repeat_count), GetDefaultThreadPool(Env::Default()));
+    if (!st.IsOK()) {
+      fprintf(stderr, "%s\n", st.ErrorMessage().c_str());
+      return -1;
+    }
+#endif
     std::string res = stat.ToString();
     fwrite(res.c_str(), 1, res.size(), stdout);
     for (ITestCase* l : tests) {
