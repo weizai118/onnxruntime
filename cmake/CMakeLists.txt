@@ -78,7 +78,12 @@ if(onnxruntime_USE_OPENMP)
     add_definitions(-DUSE_OPENMP)
   endif()
 endif()
+set(CMAKE_THREAD_PREFER_PTHREAD 1)
 
+find_package(Threads)
+message("XXXX ${CMAKE_THREAD_LIBS_INIT}")
+find_package(Threads)
+message("XXXX5 ${CMAKE_THREAD_LIBS_INIT}")
 if (MSVC)
   if (onnxruntime_MSVC_STATIC_RUNTIME)
     # set all of our submodules to static runtime
@@ -141,6 +146,7 @@ if(onnxruntime_BUILD_SHARED_LIB OR onnxruntime_ENABLE_PYTHON)
     find_package(PythonLibs 3.4 REQUIRED)
   endif()
 endif()
+message("check python finished")
 
 #target begins from here
 #Be careful about dependencies: for c++ lib(or exe) A and B, they may have two kinds of dependencies:
@@ -244,13 +250,16 @@ include(eigen)
 # mkldnn/mklml, openblas, onnxruntime_codegen_tvm, tvm, nnvm_compiler and pthread
 # pthread is always at the last
 set(onnxruntime_EXTERNAL_LIBRARIES onnx onnx_proto protobuf::libprotobuf tz)
-
+message("before find googletest, THREADS_HAVE_PTHREAD_ARG=${THREADS_HAVE_PTHREAD_ARG} CMAKE_THREAD_LIBS_INIT=${CMAKE_THREAD_LIBS_INIT} THREADS_PREFER_PTHREAD_FLAG=${THREADS_PREFER_PTHREAD_FLAG}")
 # gtest and gmock
 add_subdirectory(${PROJECT_SOURCE_DIR}/external/googletest EXCLUDE_FROM_ALL)
+message("After find googletest, THREADS_HAVE_PTHREAD_ARG=${THREADS_HAVE_PTHREAD_ARG} CMAKE_THREAD_LIBS_INIT=${CMAKE_THREAD_LIBS_INIT} THREADS_PREFER_PTHREAD_FLAG=${THREADS_PREFER_PTHREAD_FLAG}")
+
 set_target_properties(gmock PROPERTIES FOLDER "External/GTest")
 set_target_properties(gmock_main PROPERTIES FOLDER "External/GTest")
 set_target_properties(gtest PROPERTIES FOLDER "External/GTest")
 set_target_properties(gtest_main PROPERTIES FOLDER "External/GTest")
+message("BBBBBBBBBBB THREADS_HAVE_PTHREAD_ARG=${THREADS_HAVE_PTHREAD_ARG}")
 
 function(onnxruntime_add_include_to_target dst_target)
     foreach(src_target ${ARGN})
@@ -434,18 +443,23 @@ if (onnxruntime_USE_OPENBLAS)
     list(APPEND onnxruntime_EXTERNAL_LIBRARIES openblas)
   endif()
 endif()
+message("XXXX1 ${CMAKE_THREAD_LIBS_INIT}")
 
 configure_file(onnxruntime_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/onnxruntime_config.h)
 
 if (onnxruntime_USE_CUDA)
   add_definitions(-DUSE_CUDA=1)
   enable_language(CUDA)
+
   set(CMAKE_CUDA_STANDARD 14)
   if (DEFINED onnxruntime_CUDA_HOME)
     file(TO_CMAKE_PATH ${onnxruntime_CUDA_HOME} CUDA_TOOLKIT_ROOT_DIR)
   endif ()
   file(TO_CMAKE_PATH ${onnxruntime_CUDNN_HOME} onnxruntime_CUDNN_HOME)
+  message("XXXX3 ${CMAKE_THREAD_LIBS_INIT}")
   find_package(CUDA 9.0 REQUIRED)
+  message("XXXX4 ${CMAKE_THREAD_LIBS_INIT}")
+
   set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
   if (WIN32)
     link_directories(${onnxruntime_CUDNN_HOME}/lib/x64)
@@ -466,6 +480,7 @@ if (onnxruntime_USE_CUDA)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} --compiler-options -fPIC")
   endif()
 endif()
+message("XXXX2 ${CMAKE_THREAD_LIBS_INIT}")
 
 if (onnxruntime_USE_TVM)
   if (WIN32 AND MSVC)
@@ -505,7 +520,7 @@ include(onnxruntime_util.cmake)
 include(onnxruntime_providers.cmake)
 include(onnxruntime_session.cmake)
 include(onnxruntime_mlas.cmake)
-list(APPEND onnxruntime_EXTERNAL_LIBRARIES Threads::Threads)
+list(APPEND onnxruntime_EXTERNAL_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 
 #The following files may use the 'onnxruntime_libs' and 'onnxruntime_EXTERNAL_LIBRARIES' vars
 
@@ -534,3 +549,4 @@ if (onnxruntime_BUILD_UNIT_TESTS)
   set(CMAKE_SKIP_BUILD_RPATH OFF)
   include(onnxruntime_unittests.cmake)
 endif()
+message("XXXX ${CMAKE_THREAD_LIBS_INIT}")
