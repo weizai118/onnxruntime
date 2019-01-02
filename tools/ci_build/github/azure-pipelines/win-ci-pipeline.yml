@@ -8,10 +8,3 @@ jobs:
         arguments: ' --config Debug Release --enable_pybind --use_mkldnn --use_mklml --use_openmp --build_shared_lib --build_csharp --enable_onnx_tests'
         workingFolder: "$(Build.SourcesDirectory)"
 
-    - task: CmdLine@1
-      displayName: 'Clean build folders/files'
-      inputs:
-        filename: rd
-        arguments: '/s /q $(Agent.BuildDirectory)'
-      continueOnError: true
-      condition: always()
