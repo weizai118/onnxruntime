@@ -10,6 +10,7 @@
 //
 // It creates & destroys itself in init_seg(lib) so it should scope all user code
 //
+#pragma comment(lib, "Dbghelp.lib")
 #if 0
 // TVM need to run with shared CRT, so won't work with debug heap alloc
 #ifndef USE_TVM
