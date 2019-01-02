@@ -227,7 +227,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DGSL_UNENFORCED_ON_CONT
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DGSL_UNENFORCED_ON_CONTRACT_VIOLATION")
 
 include(eigen)
-set(onnxruntime_EXTERNAL_LIBRARIES protobuf::libprotobuf)
+set(onnxruntime_EXTERNAL_LIBRARIES protobuf::libprotobuf Dbghelp)
 
 # gtest and gmock
 add_subdirectory(${PROJECT_SOURCE_DIR}/external/googletest EXCLUDE_FROM_ALL)
