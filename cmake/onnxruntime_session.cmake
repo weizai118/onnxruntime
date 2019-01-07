@@ -15,5 +15,5 @@ onnxruntime_add_include_to_target(onnxruntime_session onnx protobuf::libprotobuf
 target_include_directories(onnxruntime_session PRIVATE ${ONNXRUNTIME_ROOT} ${NSYNC_INCLUDE_DIR})
 add_dependencies(onnxruntime_session ${onnxruntime_EXTERNAL_DEPENDENCIES} nsync)
 set_target_properties(onnxruntime_session PROPERTIES FOLDER "ONNXRuntime")
-
+target_link_libraries(onnxruntime_session ${NSYNC_STATIC_LIBRARIES})
 
