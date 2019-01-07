@@ -21,8 +21,8 @@ from os.path import expanduser
 logging.basicConfig(format="%(asctime)s %(name)s [%(levelname)s] - %(message)s", level=logging.DEBUG)
 log = logging.getLogger("Build")
 
-test_data_url = 'https://onnxruntimetestdata.blob.core.windows.net/models/20181210.zip'
-test_data_checksum = 'a966def7447f4ff04f5665bca235b3f3'
+test_data_url = 'https://onnxruntimetestdata.blob.core.windows.net/models/20190107.zip'
+test_data_checksum = '67622404e651317e24c581350718331a'
 
 class BuildError(Exception):
     """Error from running build steps."""
