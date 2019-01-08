@@ -4,13 +4,12 @@
 #include "core/session/inference_session.h"
 
 #include <memory>
-#include <mutex>
 #include <sstream>
 #include <unordered_set>
 #include <list>
-#include "nsync_mu.h"
 
 #include "core/common/logging/logging.h"
+#include "core/common/nsyncHelper.h"
 #include "core/common/task_thread_pool.h"
 #include "core/graph/graph_viewer.h"
 #include "core/graph/graph_transformer.h"
@@ -45,17 +44,6 @@ using namespace ONNX_NAMESPACE;
 using namespace nsync;
 
 namespace onnxruntime {
-
-// for testing
-class NsyncLockGuard {
-  nsync_mu* m_lockable;
-
- public:
-  NsyncLockGuard(nsync_mu* lockable) : m_lockable(lockable) {
-    nsync::nsync_mu_lock(lockable);
-  }
-  ~NsyncLockGuard() { nsync::nsync_mu_unlock(m_lockable); }
-};
 
 class InferenceSession::Impl {
  public:

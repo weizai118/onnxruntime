@@ -18,7 +18,9 @@ a corresponding "complete event (X)" in "chrome tracing" format.
 */
 class Profiler {
  public:
-  Profiler() noexcept {};  // turned off by default.
+  Profiler() noexcept {
+    mutex_ = {0, 0};
+  };  // turned off by default.
 
   /*
   Initializes Profiler with the session logger to log framework specific messages
@@ -64,7 +66,7 @@ class Profiler {
   ORT_DISALLOW_COPY_ASSIGNMENT_AND_MOVE(Profiler);
 
   // Mutex controlling access to profiler data
-  std::mutex mutex_;
+  nsync::nsync_mu mutex_;
   bool enabled_{false};
   std::ofstream profile_stream_;
   std::string profile_stream_file_;

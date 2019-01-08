@@ -52,10 +52,7 @@ static std::atomic<void*>& DefaultLoggerManagerInstance() noexcept {
 #pragma warning(disable : 26426)
 #endif
 
-static std::mutex& DefaultLoggerMutex() noexcept {
-  static std::mutex mutex;
-  return mutex;
-}
+static nsync::nsync_mu mutex_{0, 0};
 
 Logger* LoggingManager::s_default_logger_ = nullptr;
 
@@ -94,7 +91,7 @@ LoggingManager::LoggingManager(std::unique_ptr<ISink> sink, Severity default_min
 
     // lock mutex to create instance, and enable logging
     // this matches the mutex usage in Shutdown
-    std::lock_guard<std::mutex> guard(DefaultLoggerMutex());
+    NsyncLockGuard guard(&mutex_);
 
     if (DefaultLoggerManagerInstance().load() != nullptr) {
       throw std::logic_error("Only one instance of LoggingManager created with InstanceType::Default can exist at any point in time.");
@@ -114,7 +111,7 @@ LoggingManager::LoggingManager(std::unique_ptr<ISink> sink, Severity default_min
 LoggingManager::~LoggingManager() {
   if (owns_default_logger_) {
     // lock mutex to reset DefaultLoggerManagerInstance() and free default logger from this instance.
-    std::lock_guard<std::mutex> guard(DefaultLoggerMutex());
+    NsyncLockGuard gaurd(&mutex_);
 
     DefaultLoggerManagerInstance().store(nullptr, std::memory_order::memory_order_release);
 
@@ -124,7 +121,7 @@ LoggingManager::~LoggingManager() {
 }
 
 void LoggingManager::CreateDefaultLogger(const std::string& logger_id) {
-  // this method is only called from ctor in scope where DefaultLoggerMutex() is already locked
+  // this method is only called from ctor in scope where &mutex_ is already locked
 
   if (s_default_logger_ != nullptr) {
     throw std::logic_error("Default logger already set. ");
