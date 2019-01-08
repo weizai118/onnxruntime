@@ -4,7 +4,7 @@
 #include "core/session/inference_session.h"
 
 #include <memory>
-#include <mutex>
+#include "core/platform/ort_mutex.h"
 #include <sstream>
 #include <unordered_set>
 #include <list>
@@ -124,7 +124,7 @@ class InferenceSession::Impl {
   common::Status Load(const T& model_uri) {
     auto tp = session_profiler_.StartTime();
     try {
-      std::lock_guard<std::mutex> l(session_mutex_);
+      std::lock_guard<onnxruntime::OrtMutex> l(session_mutex_);
       if (is_model_loaded_) {  // already loaded
         LOGS(*session_logger_, ERROR) << "This session already contains a loaded model.";
         return common::Status(common::ONNXRUNTIME, common::MODEL_LOADED, "This session already contains a loaded model.");
@@ -155,7 +155,7 @@ class InferenceSession::Impl {
     auto tp = session_profiler_.StartTime();
     try {
       LOGS(*session_logger_, INFO) << "Loading model using model_proto";
-      std::lock_guard<std::mutex> l(session_mutex_);
+      std::lock_guard<onnxruntime::OrtMutex> l(session_mutex_);
       if (is_model_loaded_) {  // already loaded
         LOGS(*session_logger_, ERROR) << "This session already contains a loaded model.";
         return common::Status(common::ONNXRUNTIME, common::MODEL_LOADED, "This session already contains a loaded model.");
@@ -188,7 +188,7 @@ class InferenceSession::Impl {
     auto tp = session_profiler_.StartTime();
     try {
       LOGS(*session_logger_, INFO) << "Loading model using model_proto";
-      std::lock_guard<std::mutex> l(session_mutex_);
+      std::lock_guard<onnxruntime::OrtMutex> l(session_mutex_);
       if (is_model_loaded_) {  // already loaded
         LOGS(*session_logger_, ERROR) << "This session already contains a loaded model.";
         return common::Status(common::ONNXRUNTIME, common::MODEL_LOADED, "This session already contains a loaded model.");
@@ -221,7 +221,7 @@ class InferenceSession::Impl {
     auto tp = session_profiler_.StartTime();
     try {
       LOGS(*session_logger_, INFO) << "Loading model using istream";
-      std::lock_guard<std::mutex> l(session_mutex_);
+      std::lock_guard<onnxruntime::OrtMutex> l(session_mutex_);
       if (is_model_loaded_) {  // already loaded
         LOGS(*session_logger_, ERROR) << "This session already contains a loaded model.";
         return common::Status(common::ONNXRUNTIME, common::MODEL_LOADED, "This session already contains a loaded model.");
@@ -357,7 +357,7 @@ class InferenceSession::Impl {
 
     try {
       LOGS(*session_logger_, INFO) << "Initializing session.";
-      std::lock_guard<std::mutex> l(session_mutex_);
+      std::lock_guard<onnxruntime::OrtMutex> l(session_mutex_);
       if (!is_model_loaded_) {
         LOGS(*session_logger_, ERROR) << "Model was not loaded";
         return common::Status(common::ONNXRUNTIME, common::FAIL, "Model was not loaded.");
@@ -805,7 +805,7 @@ class InferenceSession::Impl {
 
     try {
       {
-        std::lock_guard<std::mutex> l(session_mutex_);
+        std::lock_guard<onnxruntime::OrtMutex> l(session_mutex_);
         if (!is_inited_) {
           LOGS(*session_logger_, ERROR) << "Session was not initialized";
           retval = Status(common::ONNXRUNTIME, common::FAIL, "Session not initialized.");
@@ -873,7 +873,7 @@ class InferenceSession::Impl {
 
   std::pair<common::Status, const ModelMetadata*> GetModelMetadata() const {
     {
-      std::lock_guard<std::mutex> l(session_mutex_);
+      std::lock_guard<onnxruntime::OrtMutex> l(session_mutex_);
       if (!is_model_loaded_) {
         LOGS(*session_logger_, ERROR) << "Model was not loaded";
         return std::make_pair(common::Status(common::ONNXRUNTIME, common::FAIL, "Model was not loaded."),
@@ -886,7 +886,7 @@ class InferenceSession::Impl {
 
   std::pair<common::Status, const InputDefList*> GetModelInputs() const {
     {
-      std::lock_guard<std::mutex> l(session_mutex_);
+      std::lock_guard<onnxruntime::OrtMutex> l(session_mutex_);
       if (!is_model_loaded_) {
         LOGS(*session_logger_, ERROR) << "Model was not loaded";
         return std::make_pair(common::Status(common::ONNXRUNTIME, common::FAIL, "Model was not loaded."),
@@ -899,7 +899,7 @@ class InferenceSession::Impl {
 
   std::pair<common::Status, const OutputDefList*> GetModelOutputs() const {
     {
-      std::lock_guard<std::mutex> l(session_mutex_);
+      std::lock_guard<onnxruntime::OrtMutex> l(session_mutex_);
       if (!is_model_loaded_) {
         LOGS(*session_logger_, ERROR) << "Model was not loaded";
         return std::make_pair(common::Status(common::ONNXRUNTIME, common::FAIL, "Model was not loaded."),
@@ -912,7 +912,7 @@ class InferenceSession::Impl {
 
   common::Status NewIOBinding(std::unique_ptr<IOBinding>* io_binding) {
     {
-      std::lock_guard<std::mutex> l(session_mutex_);
+      std::lock_guard<onnxruntime::OrtMutex> l(session_mutex_);
       if (!is_inited_) {
         LOGS(*session_logger_, ERROR) << "Session was not initialized";
         return common::Status(common::ONNXRUNTIME, common::FAIL, "Session not initialized.");
@@ -1146,7 +1146,7 @@ class InferenceSession::Impl {
   // Number of concurrently running executors
   std::atomic<int> current_num_runs_;
 
-  mutable std::mutex session_mutex_;  // to ensure only one thread can invoke Load/Initialize
+  mutable onnxruntime::OrtMutex session_mutex_;  // to ensure only one thread can invoke Load/Initialize
   bool is_model_loaded_ = false;      // GUARDED_BY(session_mutex_)
   bool is_inited_ = false;            // GUARDED_BY(session_mutex_)
 
