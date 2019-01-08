@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 // Portions Copyright (c) Microsoft Corporation
+#pragma once
 
 #include "nsync.h"
 

@@ -222,7 +222,7 @@ file(GLOB onnxruntime_test_framework_src ${onnxruntime_test_framework_src_patter
 add_library(onnxruntime_test_utils_for_framework ${onnxruntime_test_utils_src})
 onnxruntime_add_include_to_target(onnxruntime_test_utils_for_framework gtest onnx protobuf::libprotobuf)
 add_dependencies(onnxruntime_test_utils_for_framework ${onnxruntime_EXTERNAL_DEPENDENCIES} eigen nsync)
-target_include_directories(onnxruntime_test_utils_for_framework PUBLIC "${TEST_SRC_DIR}/util/include" PRIVATE ${eigen_INCLUDE_DIRS} ${ONNXRUNTIME_ROOT})
+target_include_directories(onnxruntime_test_utils_for_framework PUBLIC "${TEST_SRC_DIR}/util/include" PRIVATE ${eigen_INCLUDE_DIRS} ${ONNXRUNTIME_ROOT} ${NSYNC_INCLUDE_DIR})
 # Add the define for conditionally using the framework Environment class in TestEnvironment
 target_compile_definitions(onnxruntime_test_utils_for_framework PUBLIC -DHAVE_FRAMEWORK_LIB)
 
@@ -505,7 +505,8 @@ if(HAS_FILESYSTEM_H OR HAS_EXPERIMENTAL_FILESYSTEM_H)
   file(GLOB onnxruntime_perf_test_src ${onnxruntime_perf_test_src_patterns})
   add_executable(onnxruntime_perf_test ${onnxruntime_perf_test_src})
 
-  target_include_directories(onnxruntime_perf_test PRIVATE ${ONNXRUNTIME_ROOT} ${eigen_INCLUDE_DIRS} ${extra_includes} ${onnxruntime_graph_header} ${onnxruntime_exec_src_dir} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/onnx)
+  target_include_directories(onnxruntime_perf_test PRIVATE ${ONNXRUNTIME_ROOT} ${eigen_INCLUDE_DIRS} ${extra_includes} ${onnxruntime_graph_header} ${onnxruntime_exec_src_dir} ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/onnx 
+  ${NSYNC_INCLUDE_DIR})
   if (WIN32)
     target_compile_options(onnxruntime_perf_test PRIVATE ${disabled_warnings})
   endif()

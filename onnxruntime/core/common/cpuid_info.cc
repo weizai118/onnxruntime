@@ -7,7 +7,6 @@
 
 #if defined(PLATFORM_X86)
 #include <memory>
-#include <mutex>
 
 #if defined(_MSC_VER)
 #include <intrin.h>
@@ -40,7 +39,7 @@ static inline int XGETBV() {
   return eax;
 #endif
 }
-#endif // PLATFORM_X86
+#endif  // PLATFORM_X86
 
 CPUIDInfo::CPUIDInfo() noexcept {
 #if defined(PLATFORM_X86)

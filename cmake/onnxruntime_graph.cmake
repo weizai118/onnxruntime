@@ -14,7 +14,7 @@ file(GLOB_RECURSE onnxruntime_ir_defs_src
 add_library(onnxruntime_graph ${onnxruntime_graph_src} ${onnxruntime_ir_defs_src})
 add_dependencies(onnxruntime_graph onnx_proto gsl)
 onnxruntime_add_include_to_target(onnxruntime_graph onnx protobuf::libprotobuf)
-target_include_directories(onnxruntime_graph PRIVATE ${ONNXRUNTIME_ROOT})
+target_include_directories(onnxruntime_graph PRIVATE ${ONNXRUNTIME_ROOT} ${NSYNC_INCLUDE_DIR})
 set_target_properties(onnxruntime_graph PROPERTIES FOLDER "ONNXRuntime")
 set_target_properties(onnxruntime_graph PROPERTIES LINKER_LANGUAGE CXX)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/../include/onnxruntime/core/graph  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/onnxruntime/core)
