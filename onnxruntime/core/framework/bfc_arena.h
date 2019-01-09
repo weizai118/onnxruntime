@@ -17,10 +17,10 @@ limitations under the License.
 #pragma once
 #include <array>
 #include <memory>
-#include <mutex>
 #include <sstream>
 
 #include "core/common/common.h"
+#include "core/common/nsyncHelper.h"
 #include "core/common/logging/logging.h"
 #include "core/common/logging/severity.h"
 #include "core/framework/arena.h"
@@ -461,7 +461,7 @@ class BFCArena : public IArenaAllocator {
 
   std::unique_ptr<IDeviceAllocator> device_allocator_;
 
-  mutable std::mutex lock_;
+  mutable nsync::nsync_mu lock_;
 
   RegionManager region_manager_;
   std::vector<Chunk> chunks_;

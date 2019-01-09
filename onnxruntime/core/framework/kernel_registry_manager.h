@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 #include <list>
-#include <mutex>
 #include "core/common/status.h"
+#include "core/common/nsyncHelper.h"
 #include "core/graph/graph_viewer.h"
 
 namespace onnxruntime {
@@ -29,7 +29,7 @@ enum class KernelRegistryPriority {
 // The 1st and 2nd ones are shared across sessions.
 class KernelRegistryManager {
  public:
-  KernelRegistryManager() = default;
+  KernelRegistryManager() : lock_{0, 0} {};
 
   void RegisterKernels(const ExecutionProviders& execution_providers,
                        KernelRegistryPriority priority = KernelRegistryPriority::LowPriority);
@@ -58,6 +58,6 @@ class KernelRegistryManager {
 
   // This list stores all kernel registries shared across sessions, including common ones and customized ones.
   std::list<std::shared_ptr<KernelRegistry>> kernel_registries_;
-  mutable std::mutex lock_;
+  mutable nsync::nsync_mu lock_;
 };
 }  // namespace onnxruntime

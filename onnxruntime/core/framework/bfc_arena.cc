@@ -9,7 +9,8 @@ BFCArena::BFCArena(std::unique_ptr<IDeviceAllocator> resource_allocator,
     : device_allocator_(std::move(resource_allocator)),
       free_chunks_list_(kInvalidChunkHandle),
       next_allocation_id_(1),
-      info_(device_allocator_->Info().name, OrtAllocatorType::OrtArenaAllocator, device_allocator_->Info().id, device_allocator_->Info().mem_type) {
+      info_(device_allocator_->Info().name, OrtAllocatorType::OrtArenaAllocator, device_allocator_->Info().id, device_allocator_->Info().mem_type),
+      lock_{0, 0} {
   curr_region_allocation_bytes_ = RoundedBytes(std::min(total_memory, size_t{1048576}));
 
   // Allocate the requested amount of memory.
@@ -167,7 +168,7 @@ void* BFCArena::Reserve(size_t size) {
   if (size == 0)
     return nullptr;
 
-  std::lock_guard<std::mutex> lock(lock_);
+  NsyncLockGuard lock(&lock_);
   void* ptr = device_allocator_->Alloc(size);
   ORT_ENFORCE(reserved_chunks_.find(ptr) == reserved_chunks_.end());
   reserved_chunks_.insert(std::pair<void*, size_t>(ptr, size));
@@ -180,7 +181,7 @@ void* BFCArena::Reserve(size_t size) {
 }
 
 size_t BFCArena::RequestedSize(const void* ptr) {
-  std::lock_guard<std::mutex> lock(lock_);
+  NsyncLockGuard lock(&lock_);
   BFCArena::ChunkHandle h = region_manager_.get_handle(ptr);
   ORT_ENFORCE(h != kInvalidChunkHandle);
   BFCArena::Chunk* c = ChunkFromHandle(h);
@@ -188,7 +189,7 @@ size_t BFCArena::RequestedSize(const void* ptr) {
 }
 
 size_t BFCArena::AllocatedSize(const void* ptr) {
-  std::lock_guard<std::mutex> lock(lock_);
+  NsyncLockGuard lock(&lock_);
   BFCArena::ChunkHandle h = region_manager_.get_handle(ptr);
   ORT_ENFORCE(h != kInvalidChunkHandle);
   BFCArena::Chunk* c = ChunkFromHandle(h);
@@ -209,7 +210,7 @@ void* BFCArena::AllocateRawInternal(size_t num_bytes,
   // The BFC allocator tries to find the best fit first.
   BinNum bin_num = BinNumForSize(rounded_bytes);
 
-  std::lock_guard<std::mutex> lock(lock_);
+  NsyncLockGuard lock(&lock_);
   void* ptr = FindChunkPtr(bin_num, rounded_bytes, num_bytes);
   if (ptr != nullptr) {
     return ptr;
@@ -236,7 +237,7 @@ void* BFCArena::AllocateRawInternal(size_t num_bytes,
 }
 
 void BFCArena::GetStats(AllocatorStats* stats) {
-  std::lock_guard<std::mutex> lock(lock_);
+  NsyncLockGuard lock(&lock_);
   *stats = stats_;
 }
 
@@ -328,7 +329,7 @@ void BFCArena::Free(void* p) {
   if (p == nullptr) {
     return;
   }
-  std::lock_guard<std::mutex> lock(lock_);
+  NsyncLockGuard lock(&lock_);
   auto it = reserved_chunks_.find(p);
   if (it != reserved_chunks_.end()) {
     device_allocator_->Free(it->first);

@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include <vector>
-#include <condition_variable>
+#include "core/common/nsyncHelper.h"
 #include "core/common/common.h"
 #include "core/common/status.h"
 #include "core/common/logging/logging.h"
@@ -20,7 +19,7 @@ class ExecutionFrame;
 
 class ParallelExecutor : public IExecutor {
  public:
-  ParallelExecutor(const bool& terminate_flag = false) : terminate_flag_{terminate_flag} {}
+  ParallelExecutor(const bool& terminate_flag = false) : terminate_flag_{terminate_flag}, complete_mutex_{0, 0}, ref_mutex_{0, 0} {}
   ParallelExecutor(const SessionState& session_state, const bool& terminate_flag = false);
 
   common::Status Execute(const SessionState& session_state,
@@ -56,12 +55,17 @@ class ParallelExecutor : public IExecutor {
     }
   }
 
+  /* Condition for nsync conditional critical section */
+  int int_is_zero(void* v) {
+    return (*(int*)v == 0);
+  }
+
   std::unique_ptr<ExecutionFrame> root_frame_;
   std::vector<size_t> node_refs_;
-  std::mutex ref_mutex_;
+  nsync::nsync_mu ref_mutex_;
   int out_standings_;  //protected by complete_mutex_
-  std::mutex complete_mutex_;
-  std::condition_variable complete_cv_;
+  nsync::nsync_mu complete_mutex_;
+  nsync::nsync_cv complete_cv_;
 
   const bool& terminate_flag_;
 };

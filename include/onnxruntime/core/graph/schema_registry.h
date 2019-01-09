@@ -5,6 +5,7 @@
 #include "core/graph/constants.h"
 #include "core/common/common.h"
 #include "core/common/status.h"
+#include "core/common/nsyncHelper.h"
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
@@ -14,7 +15,6 @@
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
-#include <mutex>
 #include <deque>
 #include "sstream"
 
@@ -77,7 +77,7 @@ it means this OnnxRuntimeOpSchemaRegistry contains the complete delta from opset
 */
 class OnnxRuntimeOpSchemaRegistry : public IOnnxRuntimeOpSchemaCollection {
  public:
-  OnnxRuntimeOpSchemaRegistry() = default;
+  OnnxRuntimeOpSchemaRegistry() : mutex_({0, 0}){};
 
   common::Status SetBaselineAndOpsetVersionForDomain(
       const std::string& domain,
@@ -111,7 +111,7 @@ class OnnxRuntimeOpSchemaRegistry : public IOnnxRuntimeOpSchemaCollection {
 
   common::Status RegisterOpSchemaInternal(ONNX_NAMESPACE::OpSchema&& op_schema);
 
-  std::mutex mutex_;
+  nsync::nsync_mu mutex_;
 
   OpName_Domain_Version_Schema_Map map_;
   DomainToVersionRangeMap domain_version_range_map_;

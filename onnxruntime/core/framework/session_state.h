@@ -4,12 +4,12 @@
 #pragma once
 
 #include <memory>
-#include <mutex>
 #include <unordered_map>
 #include <vector>
 #include "gsl/gsl_util"
 
 #include "core/common/common.h"
+#include "core/common/nsyncHelper.h"
 #include "core/common/logging/logging.h"
 #include "core/common/profiler.h"
 #include "core/framework/allocation_planner.h"
@@ -35,7 +35,7 @@ struct MemoryPatternGroup;
 class SessionState {
  public:
   SessionState(const ExecutionProviders& execution_providers)
-      : execution_providers_{execution_providers} {
+      : execution_providers_{execution_providers}, mem_patterns_lock_{0, 0} {
   }
 
   // Graph viewer.
@@ -174,7 +174,7 @@ class SessionState {
   // switch for enable memory pattern optimization or not.
   bool enable_mem_pattern_ = true;
   // lock for the mem_patterns_
-  mutable std::mutex mem_patterns_lock_;
+  mutable nsync::nsync_mu mem_patterns_lock_;
   // cache for the generated mem_patterns. key is calculated based on input shapes.
   mutable std::map<int64_t, std::unique_ptr<MemoryPatternGroup>> mem_patterns_;
 

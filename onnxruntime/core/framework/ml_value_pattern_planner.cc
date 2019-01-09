@@ -7,7 +7,7 @@
 
 namespace onnxruntime {
 MLValuePatternPlanner::MLValuePatternPlanner(const SequentialExecutionPlan& execution_plan)
-    : execution_planner_{execution_plan} {
+    : execution_planner_{execution_plan}, lock_{0, 0} {
   std::set<OrtAllocatorInfo> locations;
   for (auto& alloc_plan : execution_planner_.allocation_plan) {
     if (locations.find(alloc_plan.location) == locations.end())

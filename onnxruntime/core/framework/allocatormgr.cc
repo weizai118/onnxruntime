@@ -3,7 +3,6 @@
 
 #include "core/framework/allocatormgr.h"
 #include "core/framework/bfc_arena.h"
-#include <mutex>
 #include <sstream>
 #include <unordered_map>
 #include <limits>

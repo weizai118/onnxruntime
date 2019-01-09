@@ -9,6 +9,7 @@
 #include "core/framework/op_kernel.h"
 
 using namespace ::onnxruntime::common;
+using namespace nsync;
 namespace onnxruntime {
 
 void SessionState::SetGraphViewer(std::unique_ptr<onnxruntime::GraphViewer> graph_viewer) {
@@ -79,7 +80,7 @@ static int64_t CalculateMemoryPatternsKey(const std::vector<TensorShape>& shapes
 }
 
 const MemoryPatternGroup* SessionState::GetMemoryPatternGroup(const std::vector<TensorShape>& input_shapes) const {
-  std::lock_guard<std::mutex> lock(mem_patterns_lock_);
+  NsyncLockGuard lock(&mem_patterns_lock_);
   int64_t key = CalculateMemoryPatternsKey(input_shapes);
   auto it = mem_patterns_.find(key);
   if (it == mem_patterns_.end())
@@ -92,7 +93,7 @@ Status SessionState::UpdateMemoryPatternGroupCache(const std::vector<TensorShape
                                                    std::unique_ptr<MemoryPatternGroup> mem_patterns) const {
   int64_t key = CalculateMemoryPatternsKey(input_shape);
 
-  std::lock_guard<std::mutex> lock(mem_patterns_lock_);
+  NsyncLockGuard lock(&mem_patterns_lock_);
   auto it = mem_patterns_.find(key);
   if (it == mem_patterns_.end()) {
     mem_patterns_[key] = std::move(mem_patterns);
