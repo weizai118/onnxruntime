@@ -216,7 +216,7 @@ namespace Microsoft.ML.OnnxRuntime.Tests
                 {
                     // TODO: dims contains 'None'. Session throws error.
                     // TODO: support float16
-                    if (modelDir.Name== "test_tiny_yolov2" || modelDir.Name.StartsWith("fp16_"))
+                    if (modelDir.Name== "test_tiny_yolov2" || modelDir.Name.StartsWith("fp16_") || modelDir.Name.StartsWith("tf_"))
                         continue;
 
                     String onnxModelFileName = null;

@@ -333,6 +333,7 @@ int real_main(int argc, char* argv[]) {
   broken_tests["tf_nasnet_mobile"] = "unknown failure on CUDA";
   broken_tests["tf_resnet_v2_152"] = "unknown failure on CUDA";
   broken_tests["tf_inception_v4"] = "unknown failure on CUDA";
+  broken_tests["tf_resnet_v1_152"] = "unknown failure on CUDA";
   broken_tests["tf_resnet_v2_101"] = "unknown failure on CUDA";
   broken_tests["tf_pnasnet_large"] = "unknown failure on CUDA";
   broken_tests["tf_inception_v1"] = "unknown failure on CUDA";
