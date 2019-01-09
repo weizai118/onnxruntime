@@ -43,21 +43,9 @@ class ParallelExecutor : public IExecutor {
                      const logging::Logger& logger);
 
   void FinishNodeRun() {
-    bool finished = false;
-    {
-      //Because we have a mutex here, it's not possible another thread is doing the test("while (out_standings_ > 0)"
-      std::lock_guard<std::mutex> lock(complete_mutex_);
-      finished = --out_standings_ == 0;
-    }
-    if (finished) {
-      //std::cout << "all out standing nodes are completed." << std::endl;
-      complete_cv_.notify_all();
-    }
-  }
-
-  /* Condition for nsync conditional critical section */
-  int int_is_zero(void* v) {
-    return (*(int*)v == 0);
+    //Because we have a mutex here, it's not possible another thread is doing the test("while (out_standings_ > 0)"
+    NsyncLockGuard lock(&complete_mutex_);
+    --out_standings_;
   }
 
   std::unique_ptr<ExecutionFrame> root_frame_;
@@ -65,8 +53,8 @@ class ParallelExecutor : public IExecutor {
   nsync::nsync_mu ref_mutex_;
   int out_standings_;  //protected by complete_mutex_
   nsync::nsync_mu complete_mutex_;
-  nsync::nsync_cv complete_cv_;
 
   const bool& terminate_flag_;
 };
+
 }  // namespace onnxruntime

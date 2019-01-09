@@ -25,6 +25,10 @@ ParallelExecutor::ParallelExecutor(const SessionState& session_state, const bool
     node_refs_[node.Index()] = node.GetInputEdgesCount();
   }
 }
+/* Condition for nsync conditional critical section */
+int int_is_zero(const void* v) {
+  return (*(int*)v == 0);
+}
 
 Status ParallelExecutor::Execute(const SessionState& session_state,
                                  const NameMLValMap& feeds,
@@ -50,8 +54,8 @@ Status ParallelExecutor::Execute(const SessionState& session_state,
 
   // Wait for finish.
   {
-    std::unique_lock<std::mutex> lock(complete_mutex_);
-    while (out_standings_ > 0) complete_cv_.wait(lock);
+    NsyncLockGuard lock(&complete_mutex_);
+    nsync::nsync_mu_wait(&complete_mutex_, &int_is_zero, &out_standings_, NULL);
   }
 
   VLOGS(logger, 1) << "Fetching output.";
@@ -204,7 +208,6 @@ void ParallelExecutor::RunNodeAsyncInternal(size_t p_node_index,
                                                      sync_time_begin,
                                                      {{"op_name", p_op_kernel->KernelDef().OpName()}});
     }
-    //std::cout << "Run async node finish: " << p_node_index << std::endl;
 
     keep_running = false;
 
@@ -213,7 +216,7 @@ void ParallelExecutor::RunNodeAsyncInternal(size_t p_node_index,
       auto begin = p_op_kernel->Node().OutputEdgesBegin();
       auto end = p_op_kernel->Node().OutputEdgesEnd();
 
-      std::lock_guard<std::mutex> lock(ref_mutex_);
+      NsyncLockGuard lock(&ref_mutex_);
       for (auto it = begin; it != end; it++) {
         auto idx = (*it).GetNode().Index();
         if ((--node_refs_[idx]) == 0) {
@@ -224,8 +227,6 @@ void ParallelExecutor::RunNodeAsyncInternal(size_t p_node_index,
             EnqueueNode(idx, session_state, logger);
           }
         }
-
-        //std::cout << "handle output, current name: " << p_op_kernel->Node().Name() << ", current index: " << p_node_index << ", output name: " << (*it)->GetNode().Name() << ", output index: " << (*it)->GetNode().Index() << ", after -- output ref: " << node_refs_[idx] << std::endl;
       }
     }
   }
@@ -235,7 +236,7 @@ void ParallelExecutor::RunNodeAsyncInternal(size_t p_node_index,
 
 void ParallelExecutor::EnqueueNode(size_t p_node_index, const SessionState& session_state, const logging::Logger& logger) {
   {
-    std::unique_lock<std::mutex> lock(complete_mutex_);
+    NsyncLockGuard lock(&complete_mutex_);
     out_standings_++;
   }
   //std::cout << "Enqueue async node: " << p_node_index << ", out_standings: " << out_standings_ << std::endl;
