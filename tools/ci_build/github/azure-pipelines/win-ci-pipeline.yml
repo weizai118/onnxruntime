@@ -27,7 +27,7 @@ jobs:
       displayName: 'Install conda modules'
       inputs:
         filename: '$(Build.BinariesDirectory)\packages\python\scripts\conda.exe'
-        arguments: 'install -q --insecure -y pyopenssl setuptools wheel numpy onnx'
+        arguments: 'install -c conda-forge -q --insecure -y pyopenssl setuptools wheel numpy onnx'
       timeoutInMinutes: 10
     - task: CmdLine@1
       displayName: 'Download cmake'
