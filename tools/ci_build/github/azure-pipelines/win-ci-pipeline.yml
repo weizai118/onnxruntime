@@ -17,12 +17,12 @@ jobs:
         filename: '$(Build.BinariesDirectory)\python\installer.exe'
         arguments: '/S /NoRegistry=1 /AddToPath=0 /RegisterPython=0 /D=$(Build.BinariesDirectory)\packages\python'
       timeoutInMinutes: 10
-   - task: BatchScript@1
-     displayName: 'Run post_build_vsts.bat'
-     inputs:
-       filename: '$(Build.SourcesDirectory)\tools\ci_build\github\windows\setup_env.bat'
-       modifyEnvironment: true
-       workingFolder: '$(Build.BinariesDirectory)'
+    - task: BatchScript@1
+      displayName: 'Run post_build_vsts.bat'
+      inputs:
+        filename: '$(Build.SourcesDirectory)\tools\ci_build\github\windows\setup_env.bat'
+        modifyEnvironment: true
+        workingFolder: '$(Build.BinariesDirectory)'
     - task: CmdLine@1
       displayName: 'Install conda modules'
       inputs:
